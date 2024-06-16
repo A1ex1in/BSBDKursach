@@ -138,7 +138,6 @@ class AdminWind(QMainWindow):
 
     def open_terminal(self):
         subprocess.Popen(('start', rf'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat'), shell=True)
-        pass
 
     def open_table(self):
         text = self.ui.comboBox.currentText()
@@ -168,10 +167,32 @@ class ManajerWind(QMainWindow):
 
         self.connection = connection
 
-        items = ['Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту', 'Проверить статус заявки на кредит для определённого клиента', 'Посмотреть все заявки на кредит ожидающие одобрения', 'Проверить историю выдачи кредитов для конкретного клиента', 'Получить список всех открытых кредитов', 'Посмотреть список отказанных заявок на кредит', 'Получить общую сумму всех открытых кредитов', 'Проверить текущий баланс по кредитным счетам клиента']
-        self.ui.comboBox.addItems(items)
-        view = self.ui.comboBox.view()
-        view.setMinimumWidth(max(len(item) for item in items))
+        items_table = ['Адрес клиентов', 'Адрес филиалов', 'Клиенты', 'Филиалы', 'Ключи', 'Операции', 'Счета', 'Состояния (счетов)', 'Состояния (заявок)', 'Тип (операций)', 'Тип (счетов)', 'Валюты', 'Заявки']
+        self.ui.CB_Table.addItems(items_table)
+        items_querry = ['Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту', 'Проверить статус заявки на кредит для определённого клиента', 'Посмотреть все заявки на кредит ожидающие одобрения', 'Проверить историю выдачи кредитов для конкретного клиента', 'Получить список всех открытых кредитов', 'Посмотреть список отказанных заявок на кредит', 'Получить общую сумму всех открытых кредитов', 'Проверить текущий баланс по кредитным счетам клиента']
+        self.ui.CB_Querry.addItems(items_querry)
+        self.ui.PB_Add.clicked.connect(self.add_data_bd)
+        self.ui.PB_Update.clicked.connect(self.update_data_bd)
+        self.ui.PB_Delete.clicked.connect(self.delete_data_bd)
+        self.ui.PB_Open.clicked.connect(self.open_table)
+
+    def add_data_bd(self):
+        pass
+
+    def update_data_bd(self):
+        pass
+
+    def delete_data_bd(self):
+        pass
+
+    def open_table(self):
+        text = self.ui.CB_Table.currentText()
+        item = {'Адрес клиентов': 'adres_client', 'Адрес филиалов': 'adres_filial', 'Клиенты': 'client', 'Филиалы': 'filial', 'Ключи': 'keys', 'Операции': 'operations_schet', 'Счета': 'schet', 'Состояния (счетов)': 'state_schet', 'Состояния (заявок)': 'state_zayavka', 'Тип (операций)': 'type_operation', 'Тип (счетов)': 'type_schet', 'Валюты': 'valut', 'Заявки': 'zayavka'}
+        val = item[f'{text}']
+        data = self.DataFromDB(f"""SELECT * FROM {val};""")
+        dialog = TableDialog()
+        dialog.set_data(data)
+        dialog.exec_()
 
     def DataFromDB(self, query):
         cursor = self.connection.cursor()

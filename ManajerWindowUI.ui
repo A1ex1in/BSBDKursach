@@ -6,32 +6,52 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
+    <width>910</width>
     <height>130</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>350</width>
+    <width>910</width>
     <height>130</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>350</width>
+    <width>910</width>
     <height>130</height>
    </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>14</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Сотрудник</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="LB_Fam">
+   <widget class="QComboBox" name="CB_Table">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>10</y>
+      <width>180</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+   </widget>
+   <widget class="QLabel" name="L_Tabl">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>230</width>
+      <width>80</width>
       <height>30</height>
      </rect>
     </property>
@@ -41,58 +61,92 @@
      </font>
     </property>
     <property name="text">
-     <string>По вежлевее с клиентами</string>
+     <string>Таблицы</string>
     </property>
    </widget>
-   <widget class="QLabel" name="LB_Fam_2">
+   <widget class="QPushButton" name="PB_Open">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>10</y>
+      <width>100</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Открыть</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_Add">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>10</y>
+      <width>180</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Добавить данные</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_Delete">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>10</y>
+      <width>180</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Удалить запись</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_Update">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>10</y>
+      <width>180</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Обновить данные</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="CB_Querry">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>230</width>
+      <width>900</width>
       <height>30</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>14</pointsize>
+      <pointsize>10</pointsize>
      </font>
     </property>
-    <property name="text">
-     <string>Список запросов</string>
-    </property>
    </widget>
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QPushButton" name="PB_Ex_Querry">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>90</y>
-      <width>230</width>
+      <width>900</width>
       <height>30</height>
      </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>90</y>
-      <width>90</width>
-      <height>30</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>12</pointsize>
-     </font>
     </property>
     <property name="text">
-     <string>Выполнить</string>
+     <string>Выполнить запрос</string>
     </property>
    </widget>
   </widget>
