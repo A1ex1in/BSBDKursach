@@ -7,6 +7,7 @@ import psycopg2
 # from PyQt6.QtGui import *
 # from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
+from ViewWindowUI import Ui_MainWindow
 from UserWindowUI import Ui_UserWindow
 from AdminWindowUI import Ui_AdminWind
 from ManajerWindowUI import Ui_Manajer
@@ -25,6 +26,9 @@ from AutorizationWindowUI import Ui_Autorizations
 # i = passage('runpsql.bat', disk_paths)
 # print(i)
 # D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat
+
+item_tabl_name = {'Адрес клиентов': 'adres_client', 'Адрес филиалов': 'adres_filial', 'Клиенты': 'client', 'Филиалы': 'filial', 'Ключи': 'keys', 'Операции': 'operations_schet', 'Счета': 'schet', 'Состояния (счетов)': 'state_schet', 'Состояния (заявок)': 'state_zayavka', 'Тип (операций)': 'type_operation', 'Тип (счетов)': 'type_schet', 'Валюты': 'valut', 'Заявки': 'zayavka'}
+items_table = ['Адрес клиентов', 'Адрес филиалов', 'Клиенты', 'Филиалы', 'Ключи', 'Операции', 'Счета', 'Состояния (счетов)', 'Состояния (заявок)', 'Тип (операций)', 'Тип (счетов)', 'Валюты', 'Заявки']
 
 
 def con_bd(uname, passw):
@@ -133,8 +137,7 @@ class AdminWind(QMainWindow):
 
         self.ui.pushButton.clicked.connect(self.open_terminal)
         self.ui.pushButton_2.clicked.connect(self.open_table)
-        items = ['Адрес клиентов', 'Адрес филиалов', 'Клиенты', 'Филиалы', 'Ключи', 'Операции', 'Счета', 'Состояния (счетов)', 'Состояния (заявок)', 'Тип (операций)', 'Тип (счетов)', 'Валюты', 'Заявки']
-        self.ui.comboBox.addItems(items)
+        self.ui.comboBox.addItems(items_table)
 
     def open_terminal(self):
         subprocess.Popen(('start', rf'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat'), shell=True)
@@ -142,8 +145,7 @@ class AdminWind(QMainWindow):
     def open_table(self):
         text = self.ui.comboBox.currentText()
         print(text)
-        item = {'Адрес клиентов': 'adres_client', 'Адрес филиалов': 'adres_filial', 'Клиенты': 'client', 'Филиалы': 'filial', 'Ключи': 'keys', 'Операции': 'operations_schet', 'Счета': 'schet', 'Состояния (счетов)': 'state_schet', 'Состояния (заявок)': 'state_zayavka', 'Тип (операций)': 'type_operation', 'Тип (счетов)': 'type_schet', 'Валюты': 'valut', 'Заявки': 'zayavka'}
-        val = item[f'{text}']
+        val = item_tabl_name[f'{text}']
         print(type(val))
         print(val)
         data = self.DataFromDB(f"""SELECT * FROM {val};""")
@@ -159,15 +161,50 @@ class AdminWind(QMainWindow):
         return data
 
 
+class VievWindow(QMainWindow):
+    def __init__(self, conn, table_name):
+        super().__init__()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+
+        self.conn = conn
+        self.table_name = table_name
+
+        self.load_table()
+        self.ui.pushButton.clicked.connect(self.insert_data)
+
+    def load_table(self):
+        curs = self.conn.cursor()
+        curs.execute(f"""SELECT column_name FROM information_schema.columns WHERE table_name = '{self.table_name}'""")
+        self.columns_name = [column[0] for column in curs.fetchall()]
+
+        self.ui.tableWidget.setColumnCount(len(self.columns_name))
+        self.ui.tableWidget.setHorizontalHeaderLabels(self.columns_name)
+        self.ui.tableWidget.setRowCount(1)
+
+    def insert_data(self):
+        row_data = []
+        for column in range(len(self.columns_name)):
+            item = self.ui.tableWidget.item(0, column)
+            row_data.append(item.text() if item else '')
+
+        placeholders = ', '.join(['%s'] * len(self.columns_name))
+        columns = ', '.join(self.columns_name)
+
+        query = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
+        curs = self.conn.cursor()
+        curs.execute(query, row_data)
+        self.conn.commit()
+
+
 class ManajerWind(QMainWindow):
     def __init__(self, connection):
         super().__init__()
         self.ui = Ui_Manajer()
         self.ui.setupUi(self)
 
-        self.connection = connection
+        self.conn = connection
 
-        items_table = ['Адрес клиентов', 'Адрес филиалов', 'Клиенты', 'Филиалы', 'Ключи', 'Операции', 'Счета', 'Состояния (счетов)', 'Состояния (заявок)', 'Тип (операций)', 'Тип (счетов)', 'Валюты', 'Заявки']
         self.ui.CB_Table.addItems(items_table)
         items_querry = ['Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту', 'Проверить статус заявки на кредит для определённого клиента', 'Посмотреть все заявки на кредит ожидающие одобрения', 'Проверить историю выдачи кредитов для конкретного клиента', 'Получить список всех открытых кредитов', 'Посмотреть список отказанных заявок на кредит', 'Получить общую сумму всех открытых кредитов', 'Проверить текущий баланс по кредитным счетам клиента']
         self.ui.CB_Querry.addItems(items_querry)
@@ -175,9 +212,16 @@ class ManajerWind(QMainWindow):
         self.ui.PB_Update.clicked.connect(self.update_data_bd)
         self.ui.PB_Delete.clicked.connect(self.delete_data_bd)
         self.ui.PB_Open.clicked.connect(self.open_table)
+        self.ui.PB_Ex_Querry.clicked.connect(self.Ex_Qery)
 
     def add_data_bd(self):
-        pass
+        text = self.ui.CB_Table.currentText()
+        val = item_tabl_name[f'{text}']
+        self.view_window = VievWindow(self.conn, val)
+        self.view_window.show()
+        # curs = self.conn.cursor()
+        # curs.execute(f"""SELECT column_name FROM information_schema.columns WHERE table_name = '{val}'""")
+        # columns_name = [column[0] for column in curs.fetchall()]
 
     def update_data_bd(self):
         pass
@@ -187,15 +231,17 @@ class ManajerWind(QMainWindow):
 
     def open_table(self):
         text = self.ui.CB_Table.currentText()
-        item = {'Адрес клиентов': 'adres_client', 'Адрес филиалов': 'adres_filial', 'Клиенты': 'client', 'Филиалы': 'filial', 'Ключи': 'keys', 'Операции': 'operations_schet', 'Счета': 'schet', 'Состояния (счетов)': 'state_schet', 'Состояния (заявок)': 'state_zayavka', 'Тип (операций)': 'type_operation', 'Тип (счетов)': 'type_schet', 'Валюты': 'valut', 'Заявки': 'zayavka'}
-        val = item[f'{text}']
+        val = item_tabl_name[f'{text}']
         data = self.DataFromDB(f"""SELECT * FROM {val};""")
         dialog = TableDialog()
         dialog.set_data(data)
         dialog.exec_()
 
+    def Ex_Qery(self):
+        pass
+
     def DataFromDB(self, query):
-        cursor = self.connection.cursor()
+        cursor = self.conn.cursor()
         cursor.execute(query)
         data = cursor.fetchall()
         cursor.close()
