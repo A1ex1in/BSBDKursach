@@ -219,9 +219,6 @@ class ManajerWind(QMainWindow):
         val = item_tabl_name[f'{text}']
         self.view_window = VievWindow(self.conn, val)
         self.view_window.show()
-        # curs = self.conn.cursor()
-        # curs.execute(f"""SELECT column_name FROM information_schema.columns WHERE table_name = '{val}'""")
-        # columns_name = [column[0] for column in curs.fetchall()]
 
     def update_data_bd(self):
         pass
