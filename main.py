@@ -1,18 +1,35 @@
+import os
+import subprocess
 import sys
+import psutil
 import psycopg2
 # from PyQt6 import *
 # from PyQt6.QtGui import *
 # from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
-from AdminWindowUI import Ui_AdminWind
-from AutorizationWindowUI import Ui_Autorizations
 from UserWindowUI import Ui_UserWindow
+from AdminWindowUI import Ui_AdminWind
 from ManajerWindowUI import Ui_Manajer
+from AutorizationWindowUI import Ui_Autorizations
+
+
+# def passage(name, paths):
+#     for path in paths:
+#         for root, dirs, files in os.walk(path):
+#             if name in files:
+#                 return os.path.join(root, name)
+#
+#
+# disks = psutil.disk_partitions()
+# disk_paths = [disk.device for disk in disks]
+# i = passage('runpsql.bat', disk_paths)
+# print(i)
+# D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat
 
 
 def con_bd(uname, passw):
     try:
-        con = psycopg2.connect(dbname='test', user=uname, password=passw, host='localhost')
+        con = psycopg2.connect(dbname='bank', user=uname, password=passw, host='localhost')
         return con
     except psycopg2.Error as e:
         print(f"Error:{e}")
@@ -20,6 +37,7 @@ def con_bd(uname, passw):
 
 def aut_user(conn, username):
     values = ('cliet', 'administrator', 'menedjer')
+    role = None
 
     cursor = conn.cursor()
     for value in values:
@@ -49,6 +67,10 @@ class TableDialog:
         for row_idx, row_data in enumerate(data):
             for col_idx, col_data in enumerate(row_data):
                 self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(col_data)))
+
+        width = self.table.verticalHeader().width() + self.table.horizontalHeader().length() + 50
+        height = self.table.horizontalHeader().height() + self.table.verticalHeader().length() + 50
+        self.dialog.resize(width, height)
 
     def exec_(self):
         self.dialog.exec()
@@ -102,12 +124,40 @@ class UserWind(QMainWindow):
 
 
 class AdminWind(QMainWindow):
-    def __init__(self, connection):
+    def __init__(self, connect):
         super().__init__()
         self.ui = Ui_AdminWind()
         self.ui.setupUi(self)
 
-        self.connection = connection
+        self.conn = connect
+
+        self.ui.pushButton.clicked.connect(self.open_terminal)
+        self.ui.pushButton_2.clicked.connect(self.open_table)
+        items = ['Адрес клиентов', 'Адрес филиалов', 'Клиенты', 'Филиалы', 'Ключи', 'Операции', 'Счета', 'Состояния (счетов)', 'Состояния (заявок)', 'Тип (операций)', 'Тип (счетов)', 'Валюты', 'Заявки']
+        self.ui.comboBox.addItems(items)
+
+    def open_terminal(self):
+        subprocess.Popen(('start', rf'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat'), shell=True)
+        pass
+
+    def open_table(self):
+        text = self.ui.comboBox.currentText()
+        print(text)
+        item = {'Адрес клиентов': 'adres_client', 'Адрес филиалов': 'adres_filial', 'Клиенты': 'client', 'Филиалы': 'filial', 'Ключи': 'keys', 'Операции': 'operations_schet', 'Счета': 'schet', 'Состояния (счетов)': 'state_schet', 'Состояния (заявок)': 'state_zayavka', 'Тип (операций)': 'type_operation', 'Тип (счетов)': 'type_schet', 'Валюты': 'valut', 'Заявки': 'zayavka'}
+        val = item[f'{text}']
+        print(type(val))
+        print(val)
+        data = self.DataFromDB(f"""SELECT * FROM {val};""")
+        dialog = TableDialog()
+        dialog.set_data(data)
+        dialog.exec_()
+
+    def DataFromDB(self, query):
+        cursor = self.conn.cursor()
+        cursor.execute(query)
+        data = cursor.fetchall()
+        cursor.close()
+        return data
 
 
 class ManajerWind(QMainWindow):
@@ -117,6 +167,18 @@ class ManajerWind(QMainWindow):
         self.ui.setupUi(self)
 
         self.connection = connection
+
+        items = ['Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту', 'Проверить статус заявки на кредит для определённого клиента', 'Посмотреть все заявки на кредит ожидающие одобрения', 'Проверить историю выдачи кредитов для конкретного клиента', 'Получить список всех открытых кредитов', 'Посмотреть список отказанных заявок на кредит', 'Получить общую сумму всех открытых кредитов', 'Проверить текущий баланс по кредитным счетам клиента']
+        self.ui.comboBox.addItems(items)
+        view = self.ui.comboBox.view()
+        view.setMinimumWidth(max(len(item) for item in items))
+
+    def DataFromDB(self, query):
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        data = cursor.fetchall()
+        cursor.close()
+        return data
 
 
 class Authorization(QMainWindow):
