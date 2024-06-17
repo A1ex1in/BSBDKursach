@@ -1,6 +1,8 @@
 import os
 import sys
 import PyQt6
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget
 import psutil
 import psycopg2
 import itertools
@@ -230,12 +232,12 @@ class Sotrud(QMainWindow):
             if IndexPB == 1:
                 text = self.ui.CB_L.currentText()
                 val = table_name_key[f'{text}']
-                self.win = UpdateInsert(self.conn, val, sign=1)
+                self.win = ChangeData(self.conn, val, sign=1)
                 self.win.show()
             elif IndexPB == 2:
                 text = self.ui.CB_R.currentText()
                 val = table_name_key[f'{text}']
-                self.win = UpdateInsert(self.conn, val, sign=1)
+                self.win = ChangeData(self.conn, val, sign=1)
                 self.win.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
@@ -341,24 +343,50 @@ class VievWindow(QMainWindow):
             QMessageBox.critical(None, 'Error', str(e))
 
 
-class UpIn(QMainWindow):
-    def __init__(self,connection, tabName, sign, parent=None):
+class ChangeData(QMainWindow):
+    def __init__(self, connection, tabName, sign, parent=None):
         super().__init__(parent)
-        self.ui = Ui_UpIn
+        self.ui = Ui_UpIn()
         self.ui.setupUi(self)
         self.conn = connection
         self.tabName = tabName
         self.sign = sign
         self.test()
-
+    
     def test(self):
         try:
             if self.sign == 1:
-                pass
+                self.load_to_insert()
+                self.ui.pushButton.clicked.connect(self.insert_data)
             elif self.sign == 2:
                 pass
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            QMessageBox.critical(None, 'Error', str(e))
+    
+    def load_to_insert(self):
+        try:
+            self.columns_name = GetHeadTable(self.conn, self.tabName)
+            self.ui.tableWidget.setColumnCount(len(self.columns_name))
+            self.ui.tableWidget.setHorizontalHeaderLabels(self.columns_name)
+            self.ui.tableWidget.setRowCount(1)
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+    
+    def insert_data(self):
+        try:
+            row_data = []
+            for column in range(len(self.columns_name)):
+                item = self.ui.tableWidget.item(0, column)
+                row_data.append(item.text() if item else '')
+            placeholders = ', '.join(['%s'] * len(self.columns_name))
+            columns = ', '.join(self.columns_name)
+            query = f"INSERT INTO {self.tabName} ({columns}) VALUES ({placeholders})"
+            curs = self.conn.cursor()
+            curs.execute(query, row_data)
+            self.conn.commit()
+            QMessageBox.information(self, "Выполено", "Данные обновлены.")
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
 
 
 if __name__ == '__main__':
