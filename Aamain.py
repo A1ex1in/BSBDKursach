@@ -13,8 +13,8 @@ from AdminWindowUI import Ui_AdminWind
 from UserWindowUI import Ui_UserWindow
 from VievWindowUI import Ui_VievWindow
 from ManajerWindowUI import Ui_ManajerWindow
-from UpdateInsertWindowUI import Ui_UpdateInsert
 from AutorizationWindowUI import Ui_Autorizations
+from UpdateInsertWindowUI import Ui_UpIn
 
 
 # def passage(name, paths):
@@ -341,10 +341,10 @@ class VievWindow(QMainWindow):
             QMessageBox.critical(None, 'Error', str(e))
 
 
-class UpdateInsert(QMainWindow):
-    def __init__(self, connection, tabName, sign):
-        super().__init__()
-        self.ui = Ui_UpdateInsert
+class UpIn(QMainWindow):
+    def __init__(self,connection, tabName, sign, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_UpIn
         self.ui.setupUi(self)
         self.conn = connection
         self.tabName = tabName
@@ -354,57 +354,11 @@ class UpdateInsert(QMainWindow):
     def test(self):
         try:
             if self.sign == 1:
-                self.load_to_insert()
-                self.ui.pushButton.clicked.connect(self.insert_data)
+                pass
             elif self.sign == 2:
-                self.load_to_update()
-                self.ui.pushButton.clicked.connect(self.update_data)
+                pass
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
-
-    def load_to_update(self):
-        try:
-            pass
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
-
-    def load_to_insert(self):
-        try:
-            self.columns_name = GetHeadTable(self.conn, self.tabName)
-            self.ui.tableWidget.setColumnCount(len(self.columns_name))
-            self.ui.tableWidget.setHorizontalHeaderLabels(self.columns_name)
-            self.ui.tableWidget.setRowCount(1)
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
-
-    def update_data(self):
-        try:
-            pass
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
-
-    def insert_data(self):
-        try:
-            row = []
-            for column in range(len(self.columns_name)):
-                item = self.ui.tableWidget.item(0, column)
-                row_data.append(item.text() if item else '')
-            placeholders = ', '.join(['%s'] * len(self.columns_name))
-            columns = ', '.join(self.columns_name)
-            query = f"INSERT INTO {self.tabName} ({columns}) VALUES ({placeholders})"
-            curs = self.conn.cursor()
-            curs.execute(query, row_data)
-            self.conn.commit()
-            QMessageBox.information(self, "Выполено", "Данные обновлены.")
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
-
-    def closeEvent(self, event):
-        try:
-            self.parent().show()
-            event.accept()
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
 
 
 if __name__ == '__main__':

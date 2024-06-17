@@ -9,28 +9,28 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_UpdateInsert(object):
-    def setupUi(self, UpdateInsert):
-        UpdateInsert.setObjectName("UpdateInsert")
-        UpdateInsert.resize(1000, 470)
-        UpdateInsert.setMinimumSize(QtCore.QSize(1000, 470))
-        UpdateInsert.setMaximumSize(QtCore.QSize(1000, 470))
-        self.centralwidget = QtWidgets.QWidget(parent=UpdateInsert)
+class Ui_UpIn(object):
+    def setupUi(self, UpIn):
+        UpIn.setObjectName("UpIn")
+        UpIn.resize(880, 500)
+        UpIn.setMinimumSize(QtCore.QSize(880, 500))
+        UpIn.setMaximumSize(QtCore.QSize(880, 500))
+        self.centralwidget = QtWidgets.QWidget(parent=UpIn)
         self.centralwidget.setObjectName("centralwidget")
         self.tableWidget = QtWidgets.QTableWidget(parent=self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(10, 20, 980, 420))
+        self.tableWidget.setGeometry(QtCore.QRect(10, 10, 860, 440))
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
         self.pushButton = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(10, 440, 980, 30))
+        self.pushButton.setGeometry(QtCore.QRect(10, 460, 860, 30))
         self.pushButton.setObjectName("pushButton")
-        UpdateInsert.setCentralWidget(self.centralwidget)
+        UpIn.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi(UpdateInsert)
-        QtCore.QMetaObject.connectSlotsByName(UpdateInsert)
+        self.retranslateUi(UpIn)
+        QtCore.QMetaObject.connectSlotsByName(UpIn)
 
-    def retranslateUi(self, UpdateInsert):
+    def retranslateUi(self, UpIn):
         _translate = QtCore.QCoreApplication.translate
-        UpdateInsert.setWindowTitle(_translate("UpdateInsert", "UpdateInsert"))
-        self.pushButton.setText(_translate("UpdateInsert", "Выполнить"))
+        UpIn.setWindowTitle(_translate("UpIn", "UpIn"))
+        self.pushButton.setText(_translate("UpIn", "Выполнить"))
