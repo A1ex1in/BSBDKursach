@@ -245,18 +245,30 @@ class Sotrud(QMainWindow):
     def Update(self, IndexPB):
         try:
             if IndexPB == 1:
-                pass
+                text = self.ui.CB_L.currentText()
+                val = table_name_key[f'{text}']
+                self.win = ChangeData(self.conn, val, sign=2)
+                self.win.show()
             elif IndexPB == 2:
-                pass
+                text = self.ui.CB_R.currentText()
+                val = table_name_key[f'{text}']
+                self.win = ChangeData(self.conn, val, sign=2)
+                self.win.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
     def Delete(self, IndexPB):
         try:
             if IndexPB == 1:
-                pass
+                text = self.ui.CB_L.currentText()
+                val = table_name_key[f'{text}']
+                delete_dialog = DeleteDialog(conn=self.conn, table_name=val)
+                delete_dialog.exec_()
             elif IndexPB == 2:
-                pass
+                text = self.ui.CB_R.currentText()
+                val = table_name_key[f'{text}']
+                delete_dialog = DeleteDialog(conn=self.conn, table_name=val)
+                delete_dialog.exec_()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
@@ -359,7 +371,8 @@ class ChangeData(QMainWindow):
                 self.load_to_insert()
                 self.ui.pushButton.clicked.connect(self.insert_data)
             elif self.sign == 2:
-                pass
+                self.load_to_update()
+                self.ui.pushButton.clicked.connect(self.update_data)
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
     
@@ -387,6 +400,79 @@ class ChangeData(QMainWindow):
             QMessageBox.information(self, "Выполено", "Данные обновлены.")
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
+    
+    def load_to_update(self):
+        self.columns_name = GetHeadTable(self.conn, self.tabName)
+        self.rows = SetDataDB(self.conn, f"SELECT * FROM {self.tabName}")
+        print(self.columns_name)
+        print(self.rows)
+        self.ui.tableWidget.setColumnCount(len(self.columns_name))
+        self.ui.tableWidget.setHorizontalHeaderLabels(self.columns_name)
+        self.ui.tableWidget.setRowCount(len(self.rows))
+        for row_idx, row_data in enumerate(self.rows):
+            for col_idx, cell_data in enumerate(row_data):
+                self.ui.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(str(cell_data)))
+
+    def update_data(self):
+        try:
+            curs = self.conn.cursor()
+            for row_idx in range(len(self.rows)):
+                row_data = []
+                for column in range(len(self.columns_name)):
+                    item = self.ui.tableWidget.item(row_idx, column)
+                    row_data.append(item.text() if item else '')
+
+                set_clause = ', '.join([f"{col} = %s" for col in self.columns_name])
+                query = f"UPDATE {self.tabName} SET {set_clause} WHERE {self.columns_name[0]} = %s"
+                curs.execute(query, row_data + [self.rows[row_idx][0]])
+            self.conn.commit()
+            QMessageBox.information(self, "Выполено", "Данные обновлены.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
+
+
+class DeleteDialog:
+    def __init__(self, conn=None, table_name=None):
+        self.dialog = QDialog(parent=None)
+        self.conn = conn
+        self.table_name = table_name
+        layout = QVBoxLayout()
+        self.column_combobox = QComboBox(self.dialog)
+        self.load_columns()
+        layout.addWidget(self.column_combobox)
+        self.value_edit = QLineEdit(self.dialog)
+        self.value_edit.setPlaceholderText("Значение для удаления")
+        layout.addWidget(self.value_edit)
+        self.delete_button = QPushButton("Выполнить", self.dialog)
+        self.delete_button.clicked.connect(self.delete_record)
+        layout.addWidget(self.delete_button)
+        self.dialog.setLayout(layout)
+
+    def load_columns(self):
+        curs = self.conn.cursor()
+        curs.execute(f"""SELECT column_name FROM information_schema.columns WHERE table_name = '{self.table_name}'""")
+        columns = [column[0] for column in curs.fetchall()]
+        self.column_combobox.addItems(columns)
+
+    def delete_record(self):
+        column = self.column_combobox.currentText()
+        value = self.value_edit.text()
+
+        if not value:
+            QMessageBox.warning(self.dialog, "Внимание", "Введите значение.")
+
+        try:
+            query = f"DELETE FROM {self.table_name} WHERE {column} = %s"
+            curs = self.conn.cursor()
+            curs.execute(query, (value,))
+            self.conn.commit()
+            QMessageBox.information(self.dialog, "Успешно", "Удаление выполнено.")
+            self.dialog.accept()
+        except Exception as e:
+            QMessageBox.critical(self.dialog, "Error", str(e))
+
+    def exec_(self):
+        self.dialog.exec()
 
 
 if __name__ == '__main__':
