@@ -3,6 +3,7 @@ import sys
 import PyQt6
 import psutil
 import psycopg2
+import itertools
 import subprocess
 from PyQt6 import *
 from PyQt6.QtGui import *
@@ -11,7 +12,9 @@ from PyQt6.QtWidgets import *
 from AdminWindowUI import Ui_AdminWind
 from ManajerWindowUI import Ui_Manajer
 from UserWindowUI import Ui_UserWindow
+from VievWindowUI import Ui_VievWindow
 from AutorizationWindowUI import Ui_Autorizations
+
 
 
 
@@ -38,6 +41,16 @@ name_query = ['Получить список всех зарегистриров
 role_list = ['cliet', 'administrator', 'menedjer']
 
 
+def main():
+    try:
+        app = QApplication(sys.argv)
+        login_window = Login()
+        login_window.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        QMessageBox.critical(None, 'Error', str(e))
+
+
 def ConnectionBD(uname, passw):
     try:
         con = psycopg2.connect(dbname='bank', user=uname, password=passw, host='localhost')
@@ -62,12 +75,27 @@ def UserRole(conn, uname):
         QMessageBox.critical(None, 'Error', str(e))
 
 
-def SetDataDB(conn, query):
-    curs = conn.cursor()
-    curs.execute(query)
-    d = curs.fetchall()
-    curs.close()
-    return d
+def SetDataDB(connection, query):
+    try:
+        curs = connection.cursor()
+        curs.execute(query)
+        d = curs.fetchall()
+        curs.close()
+        return d
+    except Exception as e:
+        QMessageBox.critical(None, 'Error', str(e))
+
+
+def GetHeadTable(connection, tableName):
+    try:
+        conn = connection
+        curs = conn.cursor()
+        v = tableName
+        curs.execute(f"""SELECT column_name FROM information_schema.columns WHERE table_name = '{v}'""")
+        h = [column[0] for column in curs.fetchall()]
+        return h
+    except Exception as e:
+        QMessageBox.critical(None, 'Error', str(e))
 
 
 class Login(QMainWindow):
@@ -124,7 +152,9 @@ class Admin(QMainWindow):
             t = self.ui.comboBox.currentText()
             v = table_name_key[f'{t}']
             d = SetDataDB(self.conn, f"""SELECT * FROM {v};""")
-            print(d)
+            h = GetHeadTable(self.conn, v)
+            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
@@ -162,13 +192,33 @@ class Client(QMainWindow):
         self.ui.PB_Schet.clicked.connect(self.GetSchet)
 
     def GetOper(self):
-        d = SetDataDB(self.conn, """SELECT * FROM operations_schet;""")
+        try:
+            d = SetDataDB(self.conn, """SELECT * FROM operations_schet;""")
+            h = GetHeadTable(self.conn, 'operations_schet')
+            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow.show()
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+
 
     def GetInfo(self):
-        d = SetDataDB(self.conn, """SELECT * FROM client;""")
+        try:
+            d = SetDataDB(self.conn, """SELECT * FROM client;""")
+            h = GetHeadTable(self.conn, 'client')
+            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow.show()
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+
 
     def GetSchet(self):
-        d = SetDataDB(self.conn, """SELECT * FROM schet;""")
+        try:
+            d = SetDataDB(self.conn, """SELECT * FROM schet;""")
+            h = GetHeadTable(self.conn, 'client')
+            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow.show()
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
 
     def closeEvent(self, event):
         try:
@@ -178,8 +228,26 @@ class Client(QMainWindow):
             QMessageBox.critical(None, 'Error', str(e))
 
 
+class VievWindow(QMainWindow):
+    def __init__(self, tabHead, data, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_VievWindow()
+        self.ui.setupUi(self)
+        self.table_head = tabHead
+        self.data = data
+        self.set_data(self.table_head, self.data)
+
+    def set_data(self, colnames, data):
+        try:
+            self.ui.tableWidget.setRowCount(len(data))
+            self.ui.tableWidget.setColumnCount(len(colnames))
+            self.ui.tableWidget.setHorizontalHeaderLabels(colnames)
+            for row_idx, row_data in enumerate(data):
+                for col_idx, col_data in enumerate(row_data):
+                    self.ui.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(str(col_data)))
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+
+
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    login_window = Login()
-    login_window.show()
-    sys.exit(app.exec())
+    main()
