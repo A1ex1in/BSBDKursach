@@ -23,12 +23,12 @@ from AutorizationWindowUI import Ui_Autorizations
 #
 # disks = psutil.disk_partitions()
 # disk_paths = [disk.device for disk in disks]
-# i = passage('runpsql.bat', disk_paths)
-# print(i)
+# path_terminal = passage('runpsql.bat', disk_paths)
+# print(path_terminal)
 # PC
 # D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat
 # Ноут
-# ?
+# D:\ASQL\PostgreSQL\16\scripts\runpsql.bat
 
 
 item_tabl_name = {'Адрес клиентов': 'adres_client', 'Адрес филиалов': 'adres_filial', 'Клиенты': 'client', 'Филиалы': 'filial', 'Ключи': 'keys', 'Операции': 'operations_schet', 'Счета': 'schet', 'Состояния (счетов)': 'state_schet', 'Состояния (заявок)': 'state_zayavka', 'Тип (операций)': 'type_operation', 'Тип (счетов)': 'type_schet', 'Валюты': 'valut', 'Заявки': 'zayavka'}
@@ -278,7 +278,7 @@ class AdminWind(QMainWindow):
         self.ui.comboBox.addItems(items_table)
 
     def open_terminal(self):
-        subprocess.Popen(('start', rf'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat'), shell=True)
+        subprocess.Popen(('start', rf'D:\ASQL\PostgreSQL\16\scripts\runpsql.bat'), shell=True)
 
     def open_table(self):
         text = self.ui.comboBox.currentText()
