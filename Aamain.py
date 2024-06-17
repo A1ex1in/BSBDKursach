@@ -10,11 +10,10 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from AdminWindowUI import Ui_AdminWind
-from ManajerWindowUI import Ui_Manajer
 from UserWindowUI import Ui_UserWindow
 from VievWindowUI import Ui_VievWindow
+from ManajerWindowUI import Ui_ManajerWindow
 from AutorizationWindowUI import Ui_Autorizations
-
 
 
 
@@ -169,9 +168,63 @@ class Admin(QMainWindow):
 class Sotrud(QMainWindow):
     def __init__(self, connection, parent=None):
         super().__init__(parent)
-        self.ui = Ui_Manajer()
+        self.ui = Ui_ManajerWindow()
         self.ui.setupUi(self)
         self.conn = connection
+
+        self.ui.CB_L.addItems(name_table)
+        self.ui.CB_R.addItems(name_table)
+        self.ui.CB_Query.addItems(name_query)
+
+        # self.ui.PB_L1.clicked.connect()
+        self.ui.PB_L2.clicked.connect(lambda: self.LoadTable(1))
+
+        # self.ui.PB_R1.clicked.connect()
+        self.ui.PB_R2.clicked.connect(lambda: self.LoadTable(2))
+
+        self.ui.PB_Query_Execute.clicked.connect(self.QueryExecute)
+
+        self.ui.PB_L_Inser.clicked.connect(lambda: self.Insert(1))
+        self.ui.PB_L_Update.clicked.connect(lambda: self.Update(1))
+        self.ui.PB_L_Delete.clicked.connect(lambda: self.Delete(1))
+
+        self.ui.PB_R_Insert.clicked.connect(lambda: self.Insert(2))
+        self.ui.PB_R_Update.clicked.connect(lambda: self.Update(2))
+        self.ui.PB_R_Delete.clicked.connect(lambda: self.Delete(2))
+
+    def LoadTable(self, IndexPB):
+        try:
+            p = IndexPB
+            print(p)
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+
+    def QueryExecute(self):
+        try:
+            pass
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+
+    def Insert(self, IndexPB):
+        try:
+            p = IndexPB
+            print(p)
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+
+    def Update(self, IndexPB):
+        try:
+            p = IndexPB
+            print(p)
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+
+    def Delete(self, IndexPB):
+        try:
+            p = IndexPB
+            print(p)
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
 
     def closeEvent(self, event):
         try:

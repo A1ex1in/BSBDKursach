@@ -1,43 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Manajer</class>
- <widget class="QMainWindow" name="Manajer">
+ <class>ManajerWindow</class>
+ <widget class="QMainWindow" name="ManajerWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>910</width>
-    <height>130</height>
+    <width>1200</width>
+    <height>850</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>910</width>
-    <height>130</height>
+    <width>1200</width>
+    <height>850</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>910</width>
-    <height>130</height>
+    <width>1200</width>
+    <height>850</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>14</pointsize>
-   </font>
-  </property>
   <property name="windowTitle">
-   <string>Сотрудник</string>
+   <string>Менеджер</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QComboBox" name="CB_Table">
+   <widget class="QTableWidget" name="TW_L">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>10</y>
-      <width>180</width>
-      <height>30</height>
+      <x>0</x>
+      <y>9</y>
+      <width>530</width>
+      <height>701</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="TW_R">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>9</y>
+      <width>530</width>
+      <height>701</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_L_Inser">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>710</y>
+      <width>170</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Добавить</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_L_Update">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>710</y>
+      <width>170</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Обновить</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_L_Delete">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>710</y>
+      <width>170</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Удалить</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_R_Delete">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>710</y>
+      <width>170</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Удалить</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_R_Insert">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>710</y>
+      <width>170</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Добавить</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_R_Update">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>710</y>
+      <width>170</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Обновить</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="CB_L">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>80</y>
+      <width>140</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="font">
@@ -46,12 +169,78 @@
      </font>
     </property>
    </widget>
-   <widget class="QLabel" name="L_Tabl">
+   <widget class="QComboBox" name="CB_R">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>80</width>
+      <x>530</x>
+      <y>370</y>
+      <width>140</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_L1">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>130</y>
+      <width>140</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>&lt;- Выбрать</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_R1">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>420</y>
+      <width>140</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Выбрать -&gt;</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="CB_Query">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>760</y>
+      <width>1200</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PB_Query_Execute">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>810</y>
+      <width>1200</width>
       <height>30</height>
      </rect>
     </property>
@@ -61,16 +250,16 @@
      </font>
     </property>
     <property name="text">
-     <string>Таблицы</string>
+     <string>Выполнить стандартный запрос</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="PB_Open">
+   <widget class="QPushButton" name="PB_L2">
     <property name="geometry">
      <rect>
-      <x>270</x>
-      <y>10</y>
-      <width>100</width>
-      <height>30</height>
+      <x>530</x>
+      <y>180</y>
+      <width>140</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="font">
@@ -79,74 +268,61 @@
      </font>
     </property>
     <property name="text">
-     <string>Открыть</string>
+     <string>&lt;- Обновить</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="PB_Add">
+   <widget class="QPushButton" name="PB_R2">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>10</y>
-      <width>180</width>
-      <height>30</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Добавить данные</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="PB_Delete">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>10</y>
-      <width>180</width>
-      <height>30</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Удалить запись</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="PB_Update">
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>10</y>
-      <width>180</width>
-      <height>30</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Обновить данные</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="CB_Querry">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>50</y>
-      <width>900</width>
-      <height>30</height>
+      <x>530</x>
+      <y>470</y>
+      <width>140</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>10</pointsize>
+      <pointsize>14</pointsize>
      </font>
     </property>
+    <property name="text">
+     <string>Обновить -&gt;</string>
+    </property>
    </widget>
-   <widget class="QPushButton" name="PB_Ex_Querry">
+   <widget class="QLabel" name="L_L">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>90</y>
-      <width>900</width>
-      <height>30</height>
+      <x>530</x>
+      <y>10</y>
+      <width>140</width>
+      <height>70</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
     <property name="text">
-     <string>Выполнить запрос</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Таблица 1&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;(левая)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="L_R">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>300</y>
+      <width>140</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Таблица 2&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;(правая)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
   </widget>
