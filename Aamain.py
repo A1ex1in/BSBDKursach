@@ -36,10 +36,36 @@ from UpdateInsertWindowUI import Ui_UpIn
 # Ноут
 # D:\ASQL\PostgreSQL\16\scripts\runpsql.bat
 path_bat = [fr'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat',fr'D:\ASQL\PostgreSQL\16\scripts\runpsql.bat']
-table_name_key = {'Адрес клиентов': 'adres_client', 'Адрес филиалов': 'adres_filial', 'Клиенты': 'client', 'Филиалы': 'filial', 'Ключи': 'keys', 'Операции': 'operations_schet', 'Счета': 'schet', 'Состояния (счетов)': 'state_schet', 'Состояния (заявок)': 'state_zayavka', 'Тип (операций)': 'type_operation', 'Тип (счетов)': 'type_schet', 'Валюты': 'valut', 'Заявки': 'zayavka'}
+table_name_key = {'Адрес клиентов': 'adres_client',
+                  'Адрес филиалов': 'adres_filial',
+                  'Клиенты': 'client',
+                  'Филиалы': 'filial',
+                  'Ключи': 'keys',
+                  'Операции': 'operations_schet',
+                  'Счета': 'schet',
+                  'Состояния (счетов)': 'state_schet',
+                  'Состояния (заявок)': 'state_zayavka',
+                  'Тип (операций)': 'type_operation',
+                  'Тип (счетов)': 'type_schet',
+                  'Валюты': 'valut',
+                  'Заявки': 'zayavka'}
 name_table = ['Адрес клиентов', 'Адрес филиалов', 'Клиенты', 'Филиалы', 'Ключи', 'Операции', 'Счета', 'Состояния (счетов)', 'Состояния (заявок)', 'Тип (операций)', 'Тип (счетов)', 'Валюты', 'Заявки']
-query_text_key = {'Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту': """SELECT c.* FROM client c JOIN schet s ON c.id_client = s.id_client WHERE s.summ != 0;""", 'Проверить статус заявки на кредит для определённого клиента': """SELECT z.*, sz.sost AS status_zayavki FROM zayavka z JOIN state_zayavka sz ON z.id_state_zayavka = sz.id_state_zayavka WHERE z.id_client = 1;""", 'Посмотреть все заявки на кредит ожидающие одобрения': """SELECT z.* FROM zayavka z WHERE z.id_state_zayavka = 7;""", 'Проверить историю выдачи кредитов для конкретного клиента': """SELECT s.* FROM schet s WHERE s.id_client = 1;""", 'Получить список всех открытых кредитов': """SELECT s.* FROM schet s WHERE s.id_state_schet = 1;""", 'Посмотреть список отказанных заявок на кредит': """SELECT z.* FROM zayavka z WHERE (z.id_state_zayavka = 6 OR z.id_state_zayavka = 9);""", 'Получить общую сумму всех открытых кредитов': """SELECT SUM(s.summ) AS total_open_credit_sum FROM schet s WHERE s.id_state_schet = 1;""", 'Проверить текущий баланс по кредитным счетам клиента': """SELECT s.id_schet, s.summ FROM schet s WHERE s.id_client = 1;"""}
-name_query = ['Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту', 'Проверить статус заявки на кредит для определённого клиента', 'Посмотреть все заявки на кредит ожидающие одобрения', 'Проверить историю выдачи кредитов для конкретного клиента', 'Получить список всех открытых кредитов', 'Посмотреть список отказанных заявок на кредит', 'Получить общую сумму всех открытых кредитов', 'Проверить текущий баланс по кредитным счетам клиента']
+query_text_key = {'Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту': """SELECT c.* FROM client c JOIN schet s ON c.id_client = s.id_client WHERE s.summ != 0;""",
+                  'Проверить статус заявки на кредит для определённого клиента': """SELECT z.*, sz.sost AS status_zayavki FROM zayavka z JOIN state_zayavka sz ON z.id_state_zayavka = sz.id_state_zayavka WHERE z.id_client = 1;""",
+                  'Посмотреть все заявки на кредит ожидающие одобрения': """SELECT z.* FROM zayavka z WHERE z.id_state_zayavka = 7;""",
+                  'Проверить историю выдачи кредитов для конкретного клиента': """SELECT s.* FROM schet s WHERE s.id_client = 1;""",
+                  'Получить список всех открытых кредитов': """SELECT s.* FROM schet s WHERE s.id_state_schet = 1;""",
+                  'Посмотреть список отказанных заявок на кредит': """SELECT z.* FROM zayavka z WHERE (z.id_state_zayavka = 6 OR z.id_state_zayavka = 9);""",
+                  'Получить общую сумму всех открытых кредитов': """SELECT SUM(s.summ) AS total_open_credit_sum FROM schet s WHERE s.id_state_schet = 1;""",
+                  'Проверить текущий баланс по кредитным счетам клиента': """SELECT s.id_schet, s.summ FROM schet s WHERE s.id_client = 1;"""}
+name_query = ['Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту',
+              'Проверить статус заявки на кредит для определённого клиента',
+              'Посмотреть все заявки на кредит ожидающие одобрения',
+              'Проверить историю выдачи кредитов для конкретного клиента',
+              'Получить список всех открытых кредитов',
+              'Посмотреть список отказанных заявок на кредит',
+              'Получить общую сумму всех открытых кредитов',
+              'Проверить текущий баланс по кредитным счетам клиента']
 role_list = ['cliet', 'administrator', 'menedjer']
 
 
@@ -155,7 +181,7 @@ class Admin(QMainWindow):
             v = table_name_key[f'{t}']
             d = SetDataDB(self.conn, f"""SELECT * FROM {v};""")
             h = GetHeadTable(self.conn, v)
-            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow = VievWindow(h, d, 1, self)
             self.TableWindow.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
@@ -186,12 +212,11 @@ class Sotrud(QMainWindow):
         self.ui.PB_R_Delete.clicked.connect(lambda: self.Delete(2))
 
     def closeEvent(self, event):
-        print("ChangeData closeEvent called")
         try:
             self.parent().show()
             event.accept()
         except Exception as e:
-            print("Exception in ChangeData closeEvent:", e)
+            QMessageBox.critical(None, 'Error', str(e))
 
     def LoadTable(self, IndexPB):
         try:
@@ -226,7 +251,7 @@ class Sotrud(QMainWindow):
             v = query_text_key[f'{t}']
             d = SetDataDB(self.conn, f"""{v}""")
             h = GetHeadTable(self.conn, v)
-            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow = VievWindow(h, d, 2, self)
             self.TableWindow.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
@@ -298,7 +323,7 @@ class Client(QMainWindow):
         try:
             d = SetDataDB(self.conn, """SELECT * FROM operations_schet;""")
             h = GetHeadTable(self.conn, 'operations_schet')
-            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow = VievWindow(h, d, 1, self)
             self.TableWindow.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
@@ -308,7 +333,7 @@ class Client(QMainWindow):
         try:
             d = SetDataDB(self.conn, """SELECT * FROM client;""")
             h = GetHeadTable(self.conn, 'client')
-            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow = VievWindow(h, d, 1, self)
             self.TableWindow.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
@@ -318,26 +343,46 @@ class Client(QMainWindow):
         try:
             d = SetDataDB(self.conn, """SELECT * FROM schet;""")
             h = GetHeadTable(self.conn, 'client')
-            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow = VievWindow(h, d, 1, self)
             self.TableWindow.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
 
 class VievWindow(QMainWindow):
-    def __init__(self, tabHead, data, parent=None):
+    def __init__(self, tabHead, data, sign, parent=None):
         super().__init__(parent)
         self.ui = Ui_VievWindow()
         self.ui.setupUi(self)
         self.table_head = tabHead
         self.data = data
-        self.set_data(self.table_head, self.data)
+        self.sign = sign
+        self.test()
+    
+    def test(self):
+        try:
+            if self.sign == 1:
+                self.set_data(self.table_head, self.data)
+            elif self.sign == 2:
+                self.set_data_for_query(self.data)
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
 
     def set_data(self, colnames, data):
         try:
             self.ui.tableWidget.setRowCount(len(data))
             self.ui.tableWidget.setColumnCount(len(colnames))
             self.ui.tableWidget.setHorizontalHeaderLabels(colnames)
+            for row_idx, row_data in enumerate(data):
+                for col_idx, col_data in enumerate(row_data):
+                    self.ui.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(str(col_data)))
+        except Exception as e:
+            QMessageBox.critical(None, 'Error', str(e))
+        
+    def set_data_for_query(self, data):
+        try:
+            self.ui.tableWidget.setRowCount(len(data))
+            self.ui.tableWidget.setColumnCount(len(data[0]) if data else 0)
             for row_idx, row_data in enumerate(data):
                 for col_idx, col_data in enumerate(row_data):
                     self.ui.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(str(col_data)))
@@ -411,7 +456,6 @@ class ChangeData(QMainWindow):
                 for column in range(len(self.columns_name)):
                     item = self.ui.tableWidget.item(row_idx, column)
                     row_data.append(item.text() if item else '')
-
                 set_clause = ', '.join([f"{col} = %s" for col in self.columns_name])
                 query = f"UPDATE {self.tabName} SET {set_clause} WHERE {self.columns_name[0]} = %s"
                 curs.execute(query, row_data + [self.rows[row_idx][0]])
