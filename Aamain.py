@@ -116,18 +116,14 @@ class Login(QMainWindow):
         try:
             if UserRole(self.conn, uname) == role_list[0]:
                 self.wind = Client(self.conn, self)
-                self.wind.show()
-                self.hide()
             elif UserRole(self.conn, uname) == role_list[1]:
                 self.wind = Admin(self.conn, self)
-                self.wind.show()
-                self.hide()
             elif UserRole(self.conn, uname) == role_list[2]:
                 self.wind = Sotrud(self.conn, self)
-                self.wind.show()
-                self.hide()
             else:
                 QMessageBox.warning(None, 'Error', 'Нет роли.')
+                return
+            self.wind.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
@@ -190,8 +186,12 @@ class Sotrud(QMainWindow):
         self.ui.PB_R_Delete.clicked.connect(lambda: self.Delete(2))
 
     def closeEvent(self, event):
-        self.parent().show()
-        event.accept()
+        print("ChangeData closeEvent called")
+        try:
+            self.parent().show()
+            event.accept()
+        except Exception as e:
+            print("Exception in ChangeData closeEvent:", e)
 
     def LoadTable(self, IndexPB):
         try:
@@ -222,7 +222,12 @@ class Sotrud(QMainWindow):
 
     def QueryExecute(self):
         try:
-            pass
+            t = self.ui.CB_Query.currentText()
+            v = query_text_key[f'{t}']
+            d = SetDataDB(self.conn, f"""{v}""")
+            h = GetHeadTable(self.conn, v)
+            self.TableWindow = VievWindow(h, d, self)
+            self.TableWindow.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
@@ -341,8 +346,8 @@ class VievWindow(QMainWindow):
 
 
 class ChangeData(QMainWindow):
-    def __init__(self, connection, tabName, sign, parent=None):
-        super().__init__(parent)
+    def __init__(self, connection, tabName, sign):
+        super().__init__()
         self.ui = Ui_UpIn()
         self.ui.setupUi(self)
         self.conn = connection
@@ -358,6 +363,8 @@ class ChangeData(QMainWindow):
             elif self.sign == 2:
                 self.load_to_update()
                 self.ui.pushButton.clicked.connect(self.update_data)
+            else:
+                print('err')
         except Exception as e:
             QMessageBox.information(None, 'Error', str(e))
     
@@ -413,6 +420,7 @@ class ChangeData(QMainWindow):
         except Exception as e:
             QMessageBox.information(self, "Error", str(e))
 
+
 class DeleteDialog:
     def __init__(self, conn=None, table_name=None, parent=None):
         self.dialog = QDialog(parent)
@@ -449,12 +457,12 @@ class DeleteDialog:
             curs.execute(query, (value,))
             self.conn.commit()
             QMessageBox.warning(self.dialog, "Успешно", "Удаление выполнено.")
-            # self.dialog.accept()
         except Exception as e:
             QMessageBox.warning(self.dialog, "Error", str(e))
 
     def exec_(self):
         self.dialog.exec()
+
 
 if __name__ == '__main__':
     main()
