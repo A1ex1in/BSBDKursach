@@ -409,7 +409,7 @@ class ChangeData(QMainWindow):
                 query = f"UPDATE {self.tabName} SET {set_clause} WHERE {self.columns_name[0]} = %s"
                 curs.execute(query, row_data + [self.rows[row_idx][0]])
             self.conn.commit()
-            QMessageBox.information(self, "Выполено", "Данные обновлены.")
+            # QMessageBox.information(self, "Выполено", "Данные обновлены.")
         except Exception as e:
             QMessageBox.information(self, "Error", str(e))
 
