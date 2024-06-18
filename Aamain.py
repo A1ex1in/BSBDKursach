@@ -34,7 +34,7 @@ from UpdateInsertWindowUI import Ui_UpIn
 # D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat
 # Ноут
 # D:\ASQL\PostgreSQL\16\scripts\runpsql.bat
-path_bat = [r'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat',r'D:\ASQL\PostgreSQL\16\scripts\runpsql.bat']
+path_bat = [fr'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat',fr'D:\ASQL\PostgreSQL\16\scripts\runpsql.bat']
 table_name_key = {'Адрес клиентов': 'adres_client', 'Адрес филиалов': 'adres_filial', 'Клиенты': 'client', 'Филиалы': 'filial', 'Ключи': 'keys', 'Операции': 'operations_schet', 'Счета': 'schet', 'Состояния (счетов)': 'state_schet', 'Состояния (заявок)': 'state_zayavka', 'Тип (операций)': 'type_operation', 'Тип (счетов)': 'type_schet', 'Валюты': 'valut', 'Заявки': 'zayavka'}
 name_table = ['Адрес клиентов', 'Адрес филиалов', 'Клиенты', 'Филиалы', 'Ключи', 'Операции', 'Счета', 'Состояния (счетов)', 'Состояния (заявок)', 'Тип (операций)', 'Тип (счетов)', 'Валюты', 'Заявки']
 query_text_key = {'Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту': """SELECT c.* FROM client c JOIN schet s ON c.id_client = s.id_client WHERE s.summ != 0;""", 'Проверить статус заявки на кредит для определённого клиента': """SELECT z.*, sz.sost AS status_zayavki FROM zayavka z JOIN state_zayavka sz ON z.id_state_zayavka = sz.id_state_zayavka WHERE z.id_client = 1;""", 'Посмотреть все заявки на кредит ожидающие одобрения': """SELECT z.* FROM zayavka z WHERE z.id_state_zayavka = 7;""", 'Проверить историю выдачи кредитов для конкретного клиента': """SELECT s.* FROM schet s WHERE s.id_client = 1;""", 'Получить список всех открытых кредитов': """SELECT s.* FROM schet s WHERE s.id_state_schet = 1;""", 'Посмотреть список отказанных заявок на кредит': """SELECT z.* FROM zayavka z WHERE (z.id_state_zayavka = 6 OR z.id_state_zayavka = 9);""", 'Получить общую сумму всех открытых кредитов': """SELECT SUM(s.summ) AS total_open_credit_sum FROM schet s WHERE s.id_state_schet = 1;""", 'Проверить текущий баланс по кредитным счетам клиента': """SELECT s.id_schet, s.summ FROM schet s WHERE s.id_client = 1;"""}
@@ -374,7 +374,7 @@ class ChangeData(QMainWindow):
                 self.load_to_update()
                 self.ui.pushButton.clicked.connect(self.update_data)
         except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
+            QMessageBox.information(None, 'Error', str(e))
     
     def load_to_insert(self):
         try:
@@ -383,7 +383,7 @@ class ChangeData(QMainWindow):
             self.ui.tableWidget.setHorizontalHeaderLabels(self.columns_name)
             self.ui.tableWidget.setRowCount(1)
         except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
+            QMessageBox.information(None, 'Error', str(e))
     
     def insert_data(self):
         try:
@@ -399,13 +399,11 @@ class ChangeData(QMainWindow):
             self.conn.commit()
             QMessageBox.information(self, "Выполено", "Данные обновлены.")
         except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
+            QMessageBox.information(None, 'Error', str(e))
     
     def load_to_update(self):
         self.columns_name = GetHeadTable(self.conn, self.tabName)
         self.rows = SetDataDB(self.conn, f"SELECT * FROM {self.tabName}")
-        print(self.columns_name)
-        print(self.rows)
         self.ui.tableWidget.setColumnCount(len(self.columns_name))
         self.ui.tableWidget.setHorizontalHeaderLabels(self.columns_name)
         self.ui.tableWidget.setRowCount(len(self.rows))
@@ -428,12 +426,18 @@ class ChangeData(QMainWindow):
             self.conn.commit()
             QMessageBox.information(self, "Выполено", "Данные обновлены.")
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            QMessageBox.information(self, "Error", str(e))
 
+    def closeEvent(self, event):
+        try:
+            self.parent().show()
+            event.accept()
+        except Exception as e:
+            QMessageBox.information(None, 'Error', str(e))
 
 class DeleteDialog:
-    def __init__(self, conn=None, table_name=None):
-        self.dialog = QDialog(parent=None)
+    def __init__(self, conn=None, table_name=None, parent=None):
+        self.dialog = QDialog(parent)
         self.conn = conn
         self.table_name = table_name
         layout = QVBoxLayout()
@@ -469,10 +473,16 @@ class DeleteDialog:
             QMessageBox.information(self.dialog, "Успешно", "Удаление выполнено.")
             self.dialog.accept()
         except Exception as e:
-            QMessageBox.critical(self.dialog, "Error", str(e))
+            QMessageBox.information(self.dialog, "Error", str(e))
 
     def exec_(self):
         self.dialog.exec()
+    # def closeEvent(self, event):
+    #     try:
+    #         self.parent().show()
+    #         event.accept()
+    #     except Exception as e:
+    #         QMessageBox.critical(None, 'Error', str(e))
 
 
 if __name__ == '__main__':
