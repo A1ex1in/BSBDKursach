@@ -181,13 +181,10 @@ class Sotrud(QMainWindow):
 
         # self.ui.PB_R1.clicked.connect()
         self.ui.PB_R2.clicked.connect(lambda: self.LoadTable(2))
-
         self.ui.PB_Query_Execute.clicked.connect(self.QueryExecute)
-
         self.ui.PB_L_Inser.clicked.connect(lambda: self.Insert(1))
         self.ui.PB_L_Update.clicked.connect(lambda: self.Update(1))
         self.ui.PB_L_Delete.clicked.connect(lambda: self.Delete(1))
-
         self.ui.PB_R_Insert.clicked.connect(lambda: self.Insert(2))
         self.ui.PB_R_Update.clicked.connect(lambda: self.Update(2))
         self.ui.PB_R_Delete.clicked.connect(lambda: self.Delete(2))
@@ -235,11 +232,12 @@ class Sotrud(QMainWindow):
                 text = self.ui.CB_L.currentText()
                 val = table_name_key[f'{text}']
                 self.win = ChangeData(self.conn, val, sign=1)
+                self.win.setWindowModality(Qt.WindowModality.ApplicationModal)
                 self.win.show()
             elif IndexPB == 2:
                 text = self.ui.CB_R.currentText()
                 val = table_name_key[f'{text}']
-                self.win = ChangeData(self.conn, val, sign=1)
+                self.win.setWindowModality(Qt.WindowModality.ApplicationModal)
                 self.win.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
@@ -250,11 +248,13 @@ class Sotrud(QMainWindow):
                 text = self.ui.CB_L.currentText()
                 val = table_name_key[f'{text}']
                 self.win = ChangeData(self.conn, val, sign=2)
+                self.win.setWindowModality(Qt.WindowModality.ApplicationModal)
                 self.win.show()
             elif IndexPB == 2:
                 text = self.ui.CB_R.currentText()
                 val = table_name_key[f'{text}']
                 self.win = ChangeData(self.conn, val, sign=2)
+                self.win.setWindowModality(Qt.WindowModality.ApplicationModal)
                 self.win.show()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
@@ -264,13 +264,13 @@ class Sotrud(QMainWindow):
             if IndexPB == 1:
                 text = self.ui.CB_L.currentText()
                 val = table_name_key[f'{text}']
-                delete_dialog = DeleteDialog(conn=self.conn, table_name=val)
-                delete_dialog.exec_()
+                self.dialog = DeleteDialog(self.conn, val, parent=self)
+                self.dialog.exec_()
             elif IndexPB == 2:
                 text = self.ui.CB_R.currentText()
                 val = table_name_key[f'{text}']
-                delete_dialog = DeleteDialog(conn=self.conn, table_name=val)
-                delete_dialog.exec_()
+                self.dialog = DeleteDialog(self.conn, val, parent=self)
+                self.dialog.exec_()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
@@ -448,11 +448,13 @@ class DeleteDialog:
             curs = self.conn.cursor()
             curs.execute(query, (value,))
             self.conn.commit()
-            QMessageBox.information(self.dialog, "Успешно", "Удаление выполнено.")
-            self.dialog.accept()
+            QMessageBox.warning(self.dialog, "Успешно", "Удаление выполнено.")
+            # self.dialog.accept()
         except Exception as e:
-            QMessageBox.information(self.dialog, "Error", str(e))
+            QMessageBox.warning(self.dialog, "Error", str(e))
 
+    def exec_(self):
+        self.dialog.exec()
 
 if __name__ == '__main__':
     main()
