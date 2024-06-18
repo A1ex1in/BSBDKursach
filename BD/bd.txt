@@ -1,0 +1,489 @@
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--таблицы
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE "keys" (
+  "id_client" bigint,
+  "keyy" text
+);
+
+CREATE TABLE "adres_filial" (
+  "id_adres_filial" bigint PRIMARY KEY,
+  "country" text,
+  "city" text,
+  "street" text,
+  "house" bigint,
+  "post_index" bigint
+);
+
+CREATE TABLE "type_operation" (
+  "id_type_operation" bigint PRIMARY KEY,
+  "nam" text
+);
+
+CREATE TABLE "type_schet" (
+  "id_type_schet" bigint PRIMARY KEY,
+  "nam" text
+);
+
+CREATE TABLE "state_schet" (
+  "id_state_schet" bigint PRIMARY KEY,
+  "sost" text
+);
+
+CREATE TABLE "valut" (
+  "id_valut" bigint PRIMARY KEY,
+  "nam" text
+);
+
+CREATE TABLE "state_zayavka" (
+  "id_state_zayavka" bigint PRIMARY KEY,
+  "sost" text
+);
+
+CREATE TABLE "adres_client" (
+  "id_adres_client" bigint PRIMARY KEY,
+  "country" text,
+  "city" text,
+  "street" text,
+  "house" bigint,
+  "apartment" bigint
+);
+
+CREATE TABLE "client" (
+  "id_client" bigint PRIMARY KEY,
+  "id_adres_client" bigint,
+  "fam" text,
+  "nam" text,
+  "otch" text,
+  "passport" text,
+  "numb" bigint
+);
+
+CREATE TABLE "zayavka" (
+  "id_zayavka" bigint PRIMARY KEY,
+  "id_client" bigint,
+  "id_state_zayavka" bigint
+);
+
+CREATE TABLE "filial" (
+  "id_filial" bigint PRIMARY KEY,
+  "id_adres_filial" bigint,
+  "nam" text
+);
+
+CREATE TABLE "schet" (
+  "id_schet" bigint PRIMARY KEY,
+  "id_client" bigint,
+  "id_type_schet" bigint,
+  "id_valut" bigint,
+  "id_state_schet" bigint,
+  "id_filial" bigint,
+  "summ" bigint
+);
+
+CREATE TABLE "operations_schet" (
+  "id_operation" bigint PRIMARY KEY,
+  "id_schet" bigint,
+  "id_type_operation" bigint,
+  "summ" bigint
+);
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--связи
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ALTER TABLE "client" ADD CONSTRAINT fk_id_adres_client FOREIGN KEY ("id_adres_client") REFERENCES "adres_client" ("id_adres_client") ON DELETE CASCADE;
+
+ALTER TABLE "zayavka" ADD CONSTRAINT fk_id_client FOREIGN KEY ("id_client") REFERENCES "client" ("id_client") ON DELETE CASCADE;
+
+ALTER TABLE "zayavka" ADD CONSTRAINT fk_id_state_zayavka FOREIGN KEY ("id_state_zayavka") REFERENCES "state_zayavka" ("id_state_zayavka") ON DELETE CASCADE;
+
+ALTER TABLE "filial" ADD CONSTRAINT fk_id_adres_filial FOREIGN KEY ("id_adres_filial") REFERENCES "adres_filial" ("id_adres_filial") ON DELETE CASCADE;
+
+ALTER TABLE "schet" ADD CONSTRAINT fk_id_client_schet FOREIGN KEY ("id_client") REFERENCES "client" ("id_client") ON DELETE CASCADE;
+
+ALTER TABLE "schet" ADD CONSTRAINT fk_id_type_schet FOREIGN KEY ("id_type_schet") REFERENCES "type_schet" ("id_type_schet") ON DELETE CASCADE;
+
+ALTER TABLE "schet" ADD CONSTRAINT fk_id_valut FOREIGN KEY ("id_valut") REFERENCES "valut" ("id_valut") ON DELETE CASCADE;
+
+ALTER TABLE "schet" ADD CONSTRAINT fk_id_state_schet FOREIGN KEY ("id_state_schet") REFERENCES "state_schet" ("id_state_schet") ON DELETE CASCADE;
+
+ALTER TABLE "schet" ADD CONSTRAINT fk_id_filial FOREIGN KEY ("id_filial") REFERENCES "filial" ("id_filial") ON DELETE CASCADE;
+
+ALTER TABLE "operations_schet" ADD CONSTRAINT fk_id_schet FOREIGN KEY ("id_schet") REFERENCES "schet" ("id_schet") ON DELETE CASCADE;
+
+ALTER TABLE "operations_schet" ADD CONSTRAINT fk_id_type_operation FOREIGN KEY ("id_type_operation") REFERENCES "type_operation" ("id_type_operation") ON DELETE CASCADE;
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--триггеры (7)
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--Триггер для автоматического обновления суммы счёта при внесении операций
+CREATE OR REPLACE FUNCTION auto_update_summ_schet()
+RETURNS TRIGGER AS $$
+DECLARE
+    var_summ DECIMAL;
+BEGIN
+    SELECT summ INTO var_summ
+    FROM schet
+    WHERE id_schet = NEW.id_schet;
+    
+    IF NEW.id_type_operation = 0 THEN
+        var_summ := var_summ - NEW.summ;
+    ELSE
+        var_summ := var_summ + NEW.summ;
+    END IF;
+    
+    UPDATE schet
+    SET summ = var_summ
+    WHERE id_schet = NEW.id_schet;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_auto_update_summ_schet
+AFTER INSERT ON operations_schet
+FOR EACH ROW
+EXECUTE FUNCTION auto_update_summ_schet();
+
+--Триггер для предотвращения удаления клиента с активными счетами
+CREATE OR REPLACE FUNCTION delite_client_state_schet_0()
+RETURNS TRIGGER AS $$
+DECLARE
+	active_count INTEGER;
+BEGIN
+	SELECT COUNT(*) INTO active_count
+	FROM schet
+	WHERE id_client = OLD.id_client AND id_state_schet = 1;
+	
+	IF active_count > 0 THEN
+        RAISE EXCEPTION 'У клиента ещё есть открытые счета.';
+    END IF;
+	RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_delite_client_state_schet_0
+BEFORE DELETE ON client
+FOR EACH ROW
+EXECUTE FUNCTION delite_client_state_schet_0();
+
+--Триггер для шифрования паспорта с генерацией ключа, и записью этого ключа в таблицу keys
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE OR REPLACE FUNCTION crypt_pasport_with_generate_key()
+RETURNS TRIGGER AS $$
+DECLARE
+    key text;
+BEGIN
+    key := gen_random_uuid()::text;
+    NEW.passport := pgp_sym_encrypt(NEW.passport, key);
+    INSERT INTO keys (id_client, keyy) VALUES (NEW.id_client, key);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_crypt_pasport_with_generate_key
+BEFORE INSERT OR UPDATE ON client
+FOR EACH ROW
+EXECUTE FUNCTION crypt_pasport_with_generate_key();
+
+--Функция для расшифрования шифрования паспорта
+CREATE OR REPLACE FUNCTION decrypt_passport(client_id int)
+RETURNS text AS $$
+DECLARE
+    encrypted_passport text;
+    decryption_key text;
+    decrypted_passport text;
+BEGIN
+    SELECT c.passport INTO encrypted_passport FROM client c WHERE c.id_client = client_id;
+    SELECT k.keyy INTO decryption_key FROM keys k WHERE k.id_client = client_id;
+    decrypted_passport := pgp_sym_decrypt(encrypted_passport::bytea, decryption_key);
+    RETURN decrypted_passport;
+END;
+$$ LANGUAGE plpgsql;
+
+--SELECT decrypt_passport(1);
+
+--Триггер для предотвращения отрицательного баланса на счете
+CREATE OR REPLACE FUNCTION no_minus_schet()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_balance DECIMAL;
+BEGIN
+    SELECT summ INTO current_balance
+    FROM schet
+    WHERE id_schet = NEW.id_schet;
+	
+    IF NEW.id_type_operation = 0 AND (current_balance - NEW.summ) < 0 THEN
+        RAISE EXCEPTION 'Операция не может быть выполнена: отрицательный баланс на счете.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_no_minus_schet
+BEFORE INSERT ON operations_schet
+FOR EACH ROW
+EXECUTE FUNCTION no_minus_schet();
+
+--Триггер для проверки существования клиента при добавлении нового счета
+CREATE OR REPLACE FUNCTION have_schet_client()
+RETURNS TRIGGER AS $$
+DECLARE
+    client_exists BOOLEAN;
+BEGIN
+	SELECT EXISTS(SELECT 1 FROM client WHERE id_client = NEW.id_client) INTO client_exists;
+
+    IF NOT client_exists THEN
+        RAISE EXCEPTION 'Нет клиента с ID %.', NEW.id_client;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_have_schet_client
+BEFORE INSERT ON schet
+FOR EACH ROW
+EXECUTE FUNCTION have_schet_client();
+
+--Триггер для предотвращения вставки операции на закрытом счете
+CREATE OR REPLACE FUNCTION state_schet_close_dont_use()
+RETURNS TRIGGER AS $$
+DECLARE
+    account_state INT;
+BEGIN
+	SELECT id_state_schet INTO account_state
+    FROM schet
+    WHERE id_schet = NEW.id_schet;
+	
+	IF account_state = 0 THEN
+        RAISE EXCEPTION 'Счёт % закрыт.', NEW.id_schet;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_state_schet_close_dont_use
+BEFORE INSERT ON operations_schet
+FOR EACH ROW
+EXECUTE FUNCTION state_schet_close_dont_use();
+
+--Триггер для ограничения количества счетов у одного клиента
+CREATE OR REPLACE FUNCTION no_more_schet()
+RETURNS TRIGGER AS $$
+DECLARE
+    account_count INT;
+    max_accounts INT := 3;
+BEGIN
+	SELECT COUNT(*) INTO account_count
+    FROM schet
+    WHERE id_client = NEW.id_client;
+	
+	IF account_count >= max_accounts THEN
+        RAISE EXCEPTION 'У клиента % уже максимум счетов (%).', NEW.id_client, max_accounts;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_no_more_schet
+BEFORE INSERT ON schet
+FOR EACH ROW
+EXECUTE FUNCTION no_more_schet();
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--роли
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+create role cliet;
+create role administrator;
+create role menedjer;
+
+CREATE USER Иванов WITH LOGIN PASSWORD 'Иванов';
+GRANT cliet TO Иванов;
+
+CREATE USER adm WITH LOGIN PASSWORD 'adm';
+GRANT administrator TO adm;
+
+CREATE USER mened WITH LOGIN PASSWORD 'mened';
+GRANT menedjer TO mened;
+
+-- Политика для таблицы client
+CREATE POLICY client_policy ON client
+    FOR SELECT
+    USING (current_user = fam 
+	OR (SELECT array_to_string(ARRAY(SELECT b.rolname 
+									 FROM pg_auth_members m 
+									 JOIN pg_roles b ON m.roleid = b.oid 
+									 WHERE m.member = r.oid), ', ')
+		FROM pg_roles r 
+		WHERE r.rolname = CURRENT_USER) 
+	IN ('administrator', 'menedjer'));
+
+-- Политика для таблицы schet
+CREATE POLICY schet_policy ON schet
+    FOR SELECT
+    USING (EXISTS (
+        SELECT 1
+        FROM client
+        WHERE client.id_client = schet.id_client
+        AND (current_user = client.fam 
+		OR (SELECT array_to_string(ARRAY(SELECT b.rolname 
+									 FROM pg_auth_members m 
+									 JOIN pg_roles b ON m.roleid = b.oid 
+									 WHERE m.member = r.oid), ', ')
+		FROM pg_roles r 
+		WHERE r.rolname = CURRENT_USER) 
+	IN ('administrator', 'menedjer'))
+    ));
+
+-- Политика для таблицы operations_schet
+CREATE POLICY operations_schet_policy ON operations_schet
+    FOR SELECT
+    USING (EXISTS (
+        SELECT 1
+        FROM client, schet
+        WHERE client.id_client = schet.id_client
+        AND schet.id_schet = operations_schet.id_schet
+        AND (current_user = client.fam 
+		OR (SELECT array_to_string(ARRAY(SELECT b.rolname 
+									 FROM pg_auth_members m 
+									 JOIN pg_roles b ON m.roleid = b.oid 
+									 WHERE m.member = r.oid), ', ')
+		FROM pg_roles r 
+		WHERE r.rolname = CURRENT_USER) 
+	IN ('administrator', 'menedjer'))
+    ));
+
+-- Включаем и применяем RLS политики
+ALTER TABLE client ENABLE ROW LEVEL SECURITY;
+ALTER TABLE client FORCE ROW LEVEL SECURITY;
+
+ALTER TABLE schet ENABLE ROW LEVEL SECURITY;
+ALTER TABLE schet FORCE ROW LEVEL SECURITY;
+
+ALTER TABLE operations_schet ENABLE ROW LEVEL SECURITY;
+ALTER TABLE operations_schet FORCE ROW LEVEL SECURITY;
+
+-- Права для роли cliet
+GRANT SELECT ON client TO cliet;
+GRANT SELECT ON schet TO cliet;
+GRANT SELECT ON operations_schet TO cliet;
+
+-- Права для ролей administrator и manager
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO administrator;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO menedjer;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--заполнение таблиц
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Заполнение таблицы "adres_filial"
+INSERT INTO "adres_filial" ("id_adres_filial", "country", "city", "street", "house", "post_index") VALUES
+(1, 'Россия', 'Москва', 'Ленина', 1, 123456),
+(2, 'Россия', 'Санкт-Петербург', 'Невский', 2, 234567),
+(3, 'Россия', 'Казань', 'Кремлевская', 3, 345678),
+(4, 'Россия', 'Сочи', 'Курортный', 4, 456789),
+(5, 'Россия', 'Екатеринбург', 'Малышева', 5, 567890),
+(6, 'Россия', 'Новосибирск', 'Кирова', 6, 678901),
+(7, 'Россия', 'Владивосток', 'Светланская', 7, 789012),
+(8, 'Россия', 'Нижний Новгород', 'Большая Покровская', 8, 890123),
+(9, 'Россия', 'Ростов-на-Дону', 'Пушкинская', 9, 901234),
+(10, 'Россия', 'Самара', 'Максима Горького', 10, 101234);
+
+-- Заполнение таблицы "type_operation"
+INSERT INTO "type_operation" ("id_type_operation", "nam") VALUES
+(0, 'Снятие'), (1, 'Пополнение');
+
+-- Заполнение таблицы "type_schet"
+INSERT INTO "type_schet" ("id_type_schet", "nam") VALUES
+(1, 'быстрый'), (2, 'долгосрочный');
+
+-- Заполнение таблицы "state_schet"
+INSERT INTO "state_schet" ("id_state_schet", "sost") VALUES
+(0, 'Закрыт'), (1, 'Открыт');
+
+-- Заполнение таблицы "valut"
+INSERT INTO "valut" ("id_valut", "nam") VALUES
+(1, 'RUB'), (2, 'USD'), (3, 'EUR'), (4, 'GBP'), (5, 'JPY'),
+(6, 'CNY'), (7, 'INR'), (8, 'CAD'), (9, 'AUD'), (10, 'CHF');
+
+-- Заполнение таблицы "state_zayavka"
+INSERT INTO "state_zayavka" ("id_state_zayavka", "sost") VALUES
+(1, 'Новая'), (2, 'В обработке'), (3, 'Завершена'), (4, 'Отменена'), (5, 'На удержании'),
+(6, 'Отклонена'), (7, 'В ожидании'), (8, 'Одобрена'), (9, 'Отклонена'), (10, 'Закрыта');
+
+-- Заполнение таблицы "adres_client"
+INSERT INTO "adres_client" ("id_adres_client", "country", "city", "street", "house", "apartment") VALUES
+(1, 'Россия', 'Москва', 'Тверская', 1, 10),
+(2, 'Россия', 'Санкт-Петербург', 'Лиговский', 2, 20),
+(3, 'Россия', 'Казань', 'Баумана', 3, 30),
+(4, 'Россия', 'Сочи', 'Ривьера', 4, 40),
+(5, 'Россия', 'Екатеринбург', 'Высоцкого', 5, 50),
+(6, 'Россия', 'Новосибирск', 'Ленина', 6, 60),
+(7, 'Россия', 'Владивосток', 'Океанский', 7, 70),
+(8, 'Россия', 'Нижний Новгород', 'Горького', 8, 80),
+(9, 'Россия', 'Ростов-на-Дону', 'Донская', 9, 90),
+(10, 'Россия', 'Самара', 'Самарская', 10, 100);
+
+-- Заполнение таблицы "client"
+INSERT INTO "client" ("id_client", "id_adres_client", "fam", "nam", "otch", "passport", "numb") VALUES
+(1, 1, 'Иванов', 'Иван', 'Иванович', '1234567890', 8901234567),
+(2, 2, 'Петров', 'Петр', 'Петрович', '2345678901', 8902345678),
+(3, 3, 'Сидоров', 'Сидор', 'Сидорович', '3456789012', 8903456789),
+(4, 4, 'Смирнов', 'Сергей', 'Сергеевич', '4567890123', 8904567890),
+(5, 5, 'Кузнецов', 'Алексей', 'Алексеевич', '5678901234', 8905678901),
+(6, 6, 'Попов', 'Андрей', 'Андреевич', '6789012345', 8906789012),
+(7, 7, 'Васильев', 'Владимир', 'Владимирович', '7890123456', 8907890123),
+(8, 8, 'Зайцев', 'Дмитрий', 'Дмитриевич', '8901234567', 8908901234),
+(9, 9, 'Ковалев', 'Юрий', 'Юрьевич', '9012345678', 8909012345),
+(10, 10, 'Орлов', 'Михаил', 'Михайлович', '1012345678', 8901012345);
+
+-- Заполнение таблицы "zayavka"
+INSERT INTO "zayavka" ("id_zayavka", "id_client", "id_state_zayavka") VALUES
+(1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4), (5, 5, 5),
+(6, 6, 6), (7, 7, 7), (8, 8, 8), (9, 9, 9), (10, 10, 10);
+
+-- Заполнение таблицы "filial"
+INSERT INTO "filial" ("id_filial", "id_adres_filial", "nam") VALUES
+(1, 1, 'Филиал в Москве'), (2, 2, 'Филиал в Санкт-Петербурге'), (3, 3, 'Филиал в Казани'),
+(4, 4, 'Филиал в Сочи'), (5, 5, 'Филиал в Екатеринбурге'), (6, 6, 'Филиал в Новосибирске'),
+(7, 7, 'Филиал во Владивостоке'), (8, 8, 'Филиал в Нижнем Новгороде'), (9, 9, 'Филиал в Ростове-на-Дону'),
+(10, 10, 'Филиал в Самаре');
+
+-- Заполнение таблицы "schet"
+INSERT INTO "schet" ("id_schet", "id_client", "id_type_schet", "id_valut", "id_state_schet", "id_filial", "summ") VALUES
+(1, 1, 1, 1, 1, 1, 10000), (2, 2, 2, 2, 1, 2, 20000), (3, 3, 1, 3, 1, 3, 30000),
+(4, 4, 1, 4, 1, 4, 40000), (5, 5, 2, 5, 1, 5, 50000), (6, 6, 1, 6, 1, 6, 60000),
+(7, 7, 1, 7, 1, 7, 70000), (8, 8, 2, 8, 1, 8, 80000), (9, 9, 1, 9, 1, 9, 90000),
+(10, 10, 1, 10, 1, 10, 100000);
+
+-- Заполнение таблицы "operations_schet"
+INSERT INTO "operations_schet" ("id_operation", "id_schet", "id_type_operation", "summ") VALUES
+(1, 1, 0, 1000), (2, 2, 0, 2000), (3, 3, 0, 3000), (4, 4, 0, 4000), (5, 5, 0, 5000),
+(6, 6, 1, 6000), (7, 7, 1, 7000), (8, 8, 1, 8000), (9, 9, 1, 9000), (10, 10, 1, 10000);
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--запросы
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--Получить список всех зарегистрированных в системе клиентов, имеющих задолженность по кредиту
+SELECT c.* FROM client c JOIN schet s ON c.id_client = s.id_client WHERE s.summ != 0;
+--Проверить статус заявки на кредит для определённого клиента
+SELECT z.*, sz.sost AS status_zayavki FROM zayavka z JOIN state_zayavka sz ON z.id_state_zayavka = sz.id_state_zayavka WHERE z.id_client = 1;
+--Посмотреть все заявки на кредит ожидающие одобрения
+SELECT z.* FROM zayavka z WHERE z.id_state_zayavka = 7;
+--Проверить историю выдачи кредитов для конкретного клиента (переделать чтобы можно было для любого клиента а не только для 1)
+SELECT s.* FROM schet s WHERE s.id_client = 1;
+--Получить список всех открытых кредитов
+SELECT s.* FROM schet s WHERE s.id_state_schet = 1;
+--Посмотреть список отказанных заявок на кредит
+SELECT z.* FROM zayavka z WHERE (z.id_state_zayavka = 6 OR z.id_state_zayavka = 9);
+--Получить общую сумму всех открытых кредитов
+SELECT SUM(s.summ) AS total_open_credit_sum FROM schet s WHERE s.id_state_schet = 1;
+--Проверить текущий баланс по кредитным счетам клиента
+SELECT s.id_schet, s.summ FROM schet s WHERE s.id_client = 1;
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
