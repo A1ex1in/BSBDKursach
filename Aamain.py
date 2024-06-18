@@ -2,6 +2,7 @@ import os
 import sys
 import PyQt6
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import QWidget
 import psutil
 import psycopg2
@@ -142,6 +143,10 @@ class Admin(QMainWindow):
         self.ui.pushButton_2.clicked.connect(self.OpenTable)
         self.ui.comboBox.addItems(name_table)
 
+    def closeEvent(self, event):
+        self.parent().show()
+        event.accept()
+
     def OpenTerminal(self):
         try:
             subprocess.Popen(('start', fr'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat'), shell=True)
@@ -156,13 +161,6 @@ class Admin(QMainWindow):
             h = GetHeadTable(self.conn, v)
             self.TableWindow = VievWindow(h, d, self)
             self.TableWindow.show()
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
-
-    def closeEvent(self, event):
-        try:
-            self.parent().show()
-            event.accept()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
@@ -193,6 +191,10 @@ class Sotrud(QMainWindow):
         self.ui.PB_R_Insert.clicked.connect(lambda: self.Insert(2))
         self.ui.PB_R_Update.clicked.connect(lambda: self.Update(2))
         self.ui.PB_R_Delete.clicked.connect(lambda: self.Delete(2))
+
+    def closeEvent(self, event):
+        self.parent().show()
+        event.accept()
 
     def LoadTable(self, IndexPB):
         try:
@@ -272,13 +274,6 @@ class Sotrud(QMainWindow):
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
-    def closeEvent(self, event):
-        try:
-            self.parent().show()
-            event.accept()
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
-
 
 class Client(QMainWindow):
     def __init__(self, connection, parent=None):
@@ -289,6 +284,10 @@ class Client(QMainWindow):
         self.ui.PB_Oper.clicked.connect(self.GetOper)
         self.ui.PB_Info.clicked.connect(self.GetInfo)
         self.ui.PB_Schet.clicked.connect(self.GetSchet)
+
+    def closeEvent(self, event):
+        self.parent().show()
+        event.accept()
 
     def GetOper(self):
         try:
@@ -319,13 +318,6 @@ class Client(QMainWindow):
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
-    def closeEvent(self, event):
-        try:
-            self.parent().show()
-            event.accept()
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
-
 
 class VievWindow(QMainWindow):
     def __init__(self, tabHead, data, parent=None):
@@ -344,13 +336,6 @@ class VievWindow(QMainWindow):
             for row_idx, row_data in enumerate(data):
                 for col_idx, col_data in enumerate(row_data):
                     self.ui.tableWidget.setItem(row_idx, col_idx, QTableWidgetItem(str(col_data)))
-        except Exception as e:
-            QMessageBox.critical(None, 'Error', str(e))
-
-    def closeEvent(self, event):
-        try:
-            self.parent().show()
-            event.accept()
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
@@ -428,13 +413,6 @@ class ChangeData(QMainWindow):
         except Exception as e:
             QMessageBox.information(self, "Error", str(e))
 
-    def closeEvent(self, event):
-        try:
-            self.parent().show()
-            event.accept()
-        except Exception as e:
-            QMessageBox.information(None, 'Error', str(e))
-
 class DeleteDialog:
     def __init__(self, conn=None, table_name=None, parent=None):
         self.dialog = QDialog(parent)
@@ -474,15 +452,6 @@ class DeleteDialog:
             self.dialog.accept()
         except Exception as e:
             QMessageBox.information(self.dialog, "Error", str(e))
-
-    def exec_(self):
-        self.dialog.exec()
-    # def closeEvent(self, event):
-    #     try:
-    #         self.parent().show()
-    #         event.accept()
-    #     except Exception as e:
-    #         QMessageBox.critical(None, 'Error', str(e))
 
 
 if __name__ == '__main__':
