@@ -171,7 +171,7 @@ class Admin(QMainWindow):
 
     def OpenTerminal(self):
         try:
-            subprocess.Popen(('start', fr'D:\programs\ASQL\PostgreSQL\16\scripts\runpsql.bat'), shell=True)
+            subprocess.Popen(('start', fr'D:\ASQL\PostgreSQL\16\scripts\runpsql.bat'), shell=True)
         except Exception as e:
             QMessageBox.critical(None, 'Error', str(e))
 
