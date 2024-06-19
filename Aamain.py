@@ -121,6 +121,7 @@ def GetHeadTable(connection, tableName):
         v = tableName
         curs.execute(f"""SELECT column_name FROM information_schema.columns WHERE table_name = '{v}'""")
         h = [column[0] for column in curs.fetchall()]
+        print(h)
         return h
     except Exception as e:
         QMessageBox.critical(None, 'Error', str(e))
@@ -267,6 +268,7 @@ class Sotrud(QMainWindow):
             elif IndexPB == 2:
                 text = self.ui.CB_R.currentText()
                 val = table_name_key[f'{text}']
+                self.win = ChangeData(self.conn, val, sign=1)
                 self.win.setWindowModality(Qt.WindowModality.ApplicationModal)
                 self.win.show()
         except Exception as e:
@@ -496,7 +498,7 @@ class DeleteDialog:
             QMessageBox.warning(self.dialog, "Внимание", "Введите значение.")
 
         try:
-            query = f"DELETE FROM {self.table_name} WHERE {column} = %s"
+            query = f"DELETE FROM {self.table_name} WHERE {column} = {value}"
             curs = self.conn.cursor()
             curs.execute(query, (value,))
             self.conn.commit()
